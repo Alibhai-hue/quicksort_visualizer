@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickSort Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-qs">QS</span>
+        <span class="logo-text">QuickSort Visualizer</span>
+      </div>
+      <div class="header-meta">
+        <span class="badge">Interactive</span>
+        <span class="badge badge-alt">DSA Learning Tool</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-grid">
+
+    <!-- LEFT SIDEBAR: Controls -->
+    <aside class="sidebar">
+
+      <section class="control-card">
+        <h2 class="control-heading">Array Setup</h2>
+
+        <div class="control-group">
+          <label class="ctrl-label" for="size-slider">Array size <span id="size-display" class="ctrl-value">12</span></label>
+          <input type="range" id="size-slider" min="5" max="24" value="12" step="1">
+        </div>
+
+        <div class="control-group">
+          <label class="ctrl-label" for="input-type">Input pattern</label>
+          <select id="input-type">
+            <option value="random">Random</option>
+            <option value="sorted">Already sorted</option>
+            <option value="reverse">Reverse sorted</option>
+            <option value="nearly">Nearly sorted</option>
+            <option value="custom">Custom values…</option>
+          </select>
+        </div>
+
+        <div class="control-group hidden" id="custom-group">
+          <label class="ctrl-label" for="custom-input">Values (comma-separated)</label>
+          <input type="text" id="custom-input" placeholder="e.g. 5,3,8,1,9,2">
+          <button class="btn btn-sm" id="apply-custom">Apply</button>
+        </div>
+
+        <button class="btn btn-full" id="gen-btn">⟳ Generate new array</button>
+      </section>
+
+      <section class="control-card">
+        <h2 class="control-heading">Pivot Strategy</h2>
+
+        <div class="pivot-options">
+          <label class="pivot-radio">
+            <input type="radio" name="pivot" value="last" checked>
+            <span class="pivot-label">
+              <span class="pivot-name">Last element</span>
+              <span class="pivot-desc">Classic Lomuto</span>
+            </span>
+          </label>
+          <label class="pivot-radio">
+            <input type="radio" name="pivot" value="first">
+            <span class="pivot-label">
+              <span class="pivot-name">First element</span>
+              <span class="pivot-desc">Bad on sorted arrays</span>
+            </span>
+          </label>
+          <label class="pivot-radio">
+            <input type="radio" name="pivot" value="mid">
+            <span class="pivot-label">
+              <span class="pivot-name">Middle element</span>
+              <span class="pivot-desc">Avoids worst case</span>
+            </span>
+          </label>
+          <label class="pivot-radio">
+            <input type="radio" name="pivot" value="random">
+            <span class="pivot-label">
+              <span class="pivot-name">Random element</span>
+              <span class="pivot-desc">Expected O(n log n)</span>
+            </span>
+          </label>
+          <label class="pivot-radio">
+            <input type="radio" name="pivot" value="median3">
+            <span class="pivot-label">
+              <span class="pivot-name">Median of three</span>
+              <span class="pivot-desc">Best general choice</span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section class="control-card">
+        <h2 class="control-heading">Playback</h2>
+
+        <div class="control-group">
+          <label class="ctrl-label" for="speed-slider">Speed <span id="speed-display" class="ctrl-value">5</span></label>
+          <input type="range" id="speed-slider" min="1" max="10" value="5" step="1">
+        </div>
+
+        <div class="playback-btns">
+          <button class="btn btn-primary" id="play-btn">▶ Play</button>
+          <button class="btn" id="step-btn">Step →</button>
+          <button class="btn" id="reset-btn">↺ Reset</button>
+        </div>
+      </section>
+
+      <section class="control-card stats-card">
+        <h2 class="control-heading">Live Stats</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-val" id="s-cmp">0</span>
+            <span class="stat-key">Comparisons</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="s-swp">0</span>
+            <span class="stat-key">Swaps</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="s-rec">0</span>
+            <span class="stat-key">Recursive calls</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="s-stp">0</span>
+            <span class="stat-key">Steps taken</span>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- RIGHT MAIN AREA: Visualization + Tabs -->
+    <div class="viz-area">
+
+      <!-- Bar visualization -->
+      <div class="viz-card">
+        <div class="viz-header">
+          <div class="viz-title-row">
+            <h1 class="viz-title">Array Visualization</h1>
+            <div class="complexity-badge" id="complexity-tag">O(n log n) average</div>
+          </div>
+          <div class="info-bar" id="info-bar">
+            Press <kbd>Play</kbd> or <kbd>Step →</kbd> to begin sorting.
+          </div>
+        </div>
+        <div class="bar-stage" id="bar-stage"></div>
+        <div class="legend-row">
+          <div class="legend-item"><span class="legend-dot" style="background:#4f8ef7"></span>Unsorted</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f5a623"></span>Pivot</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e85454"></span>Comparing</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#a855f7"></span>Swapping</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>Sorted</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#94a3b8"></span>Boundary</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-card">
+        <div class="tab-bar" role="tablist">
+          <button class="tab-btn active" data-tab="code" role="tab">Code dry-run</button>
+          <button class="tab-btn" data-tab="stack" role="tab">Call stack</button>
+          <button class="tab-btn" data-tab="log" role="tab">Step log</button>
+          <button class="tab-btn" data-tab="compare" role="tab">Strategy compare</button>
+          <button class="tab-btn" data-tab="about" role="tab">About QuickSort</button>
+        </div>
+
+        <div id="tab-code" class="tab-panel active">
+          <div class="code-and-explain">
+            <div class="code-block-wrap">
+              <div class="code-toolbar">
+                <span class="code-lang">pseudocode</span>
+                <span class="code-pivot-info" id="code-pivot-info">Strategy: Last element</span>
+              </div>
+              <pre class="code-block" id="code-block"></pre>
+            </div>
+            <div class="explain-panel">
+              <h3 class="explain-heading">What's happening</h3>
+              <p class="explain-text" id="explain-text">Step through the algorithm to see a line-by-line explanation here.</p>
+              <div class="explain-vars" id="explain-vars"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-stack" class="tab-panel hidden">
+          <div class="stack-header">
+            <span class="stack-note">Most recent call at top · Active frame highlighted</span>
+          </div>
+          <div class="call-stack-wrap" id="call-stack"></div>
+        </div>
+
+        <div id="tab-log" class="tab-panel hidden">
+          <div class="log-controls">
+            <button class="btn btn-sm" id="clear-log">Clear log</button>
+          </div>
+          <div class="log-wrap" id="step-log">
+            <div class="log-empty">Steps will appear here as you advance.</div>
+          </div>
+        </div>
+
+        <div id="tab-compare" class="tab-panel hidden">
+          <div class="compare-intro">
+            <p>Run all 5 strategies on your current array and compare performance side by side.</p>
+            <button class="btn btn-primary" id="compare-btn">⚡ Run comparison</button>
+          </div>
+          <div id="compare-result" class="compare-result-wrap"></div>
+        </div>
+
+        <div id="tab-about" class="tab-panel hidden">
+          <div class="about-content">
+            <div class="about-grid">
+              <div class="about-section">
+                <h3>How QuickSort works</h3>
+                <p>QuickSort is a divide-and-conquer algorithm. It selects a <strong>pivot</strong> element and partitions the array so all elements smaller than the pivot come before it, and all larger elements come after. It then recursively sorts the two sub-arrays.</p>
+              </div>
+              <div class="about-section">
+                <h3>Time complexity</h3>
+                <table class="complexity-table">
+                  <thead><tr><th>Case</th><th>Time</th><th>Space</th></tr></thead>
+                  <tbody>
+                    <tr><td>Best</td><td>O(n log n)</td><td>O(log n)</td></tr>
+                    <tr><td>Average</td><td>O(n log n)</td><td>O(log n)</td></tr>
+                    <tr class="worst"><td>Worst</td><td>O(n²)</td><td>O(n)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="about-section">
+                <h3>Pivot strategy guide</h3>
+                <ul class="strat-list">
+                  <li><strong>Last / First:</strong> Simple, but O(n²) on sorted/reverse input.</li>
+                  <li><strong>Middle:</strong> Handles sorted arrays well, still fragile on adversarial input.</li>
+                  <li><strong>Random:</strong> Probabilistically O(n log n), immune to adversarial patterns.</li>
+                  <li><strong>Median of three:</strong> Best practical choice — samples 3 positions, picks middle value, avoids most bad cases.</li>
+                </ul>
+              </div>
+              <div class="about-section">
+                <h3>Lomuto partition scheme</h3>
+                <p>This visualizer uses the Lomuto scheme: the pivot is moved to the end, then a single scan places smaller elements left of a growing boundary index <code>i</code>. Finally the pivot swaps into position <code>i+1</code>. Simple to implement, though Hoare's scheme uses ~⅓ fewer swaps.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- tabs-card -->
+    </div><!-- viz-area -->
+
+  </main>
+
+  <footer class="site-footer">
+    <span>QuickSort Visualizer &mdash; Built for CS education</span>
+    <span>Supports 5 pivot strategies · Step-by-step dry-run · Call stack tracing</span>
+  </footer>
+
+  <script src="quicksort.js"></script>
+  <script src="renderer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
